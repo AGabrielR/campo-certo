@@ -104,34 +104,28 @@ var USERS={dono:{role:"dono",nome:"Dono"},capataz:{role:"cap",nome:"Tonho"}};
 function isCap(){return !!(UI.user&&UI.user.role==="cap")}
 function lk(id){return location.origin+location.pathname+"?lote="+id}
 function getSess(){try{return JSON.parse(localStorage.getItem(KEY+"-sessao")||"null")}catch(e){return null}}
-function standalone(){try{return matchMedia("(display-mode: standalone)").matches||navigator.standalone}catch(e){return false}}
-function installHtml(){if(standalone())return "";return UI.inst?'<button type="button" class="btn ghost lg block" style="margin-top:16px" data-act="instalar">'+ic("plus")+'Instalar como aplicativo</button>':'<p class="m" style="margin-top:18px">Para usar como aplicativo: no Android, toque no menu ⋮ do navegador e em Instalar app. No iPhone, toque em Compartilhar e em Adicionar à Tela de Início.</p>'}
 function arroba(p){return fmt1(p*.5/15)}
-function vLogin(){return '<div class="topbar"><div><div class="name">Campo Certo</div><div class="m">Fazenda Santa Rita · exemplo</div></div><span class="chip warn">Demonstração</span></div>'+
+function vLogin(){return Shell.bar({title:"Campo Certo",sub:"Fazenda Santa Rita · demonstração",right:Shell.hub()})+
 '<h1 class="h2">Entrar</h1><p class="sub">Para o dono da fazenda e para quem cuida do gado no dia a dia.</p>'+
 '<div class="fld"><label for="lu">Usuário</label><input type="text" id="lu" autocomplete="username" autocapitalize="none" value="'+esc(UI.lu||"")+'"></div>'+
 '<div class="fld"><label for="lp">Senha</label><input type="password" id="lp" autocomplete="current-password" value="'+esc(UI.lp||"")+'"></div>'+
 '<button type="button" class="btn lg block" data-act="login">'+ic("check")+'Entrar</button>'+
 '<div class="card" style="margin-top:16px"><div class="t">Acessos de demonstração</div><div class="m" style="margin-bottom:10px">Toque para preencher. A senha dos dois é <b>demo</b>. O capataz não vê o dinheiro da fazenda.</div><div class="choices">'+[["dono","Dono da fazenda"],["capataz","Tonho · capataz"]].map(function(x){return '<button type="button" class="ch" data-act="fillLogin" data-v="'+x[0]+'">'+x[1]+'</button>'}).join("")+'</div></div>'+
-'<div class="sec">É comprador de gado?</div><p class="m" style="margin:0 0 10px">O dono manda um link com o peso, a engorda e o histórico do lote, sem o comprador precisar de conta.</p><a class="bigact" href="?lote=4"><span class="ico">'+ic("cow",24)+'</span><span>Ver um lote de exemplo<small>Como o comprador recebe</small></span></a>'+installHtml()}
-function vLoteCli(){var l=lote(UI.qlote),h='<div class="topbar"><div><div class="name">Campo Certo</div><div class="m">Fazenda Santa Rita</div></div><span class="chip">Lote de gado</span></div>';
-if(!l)return h+'<h1 class="h2">Lote não encontrado</h1><p class="sub">Confira o link. Nesta demonstração, cada aparelho guarda os próprios dados. Teste com o lote de exemplo.</p><a class="btn lg block" href="?lote=4">Ver o lote de exemplo</a>';
+'<div class="sec">Vai vender gado?</div><p class="m" style="margin:0 0 10px">Na hora de vender, o dono manda pelo WhatsApp a <b>ficha de um lote</b>: peso médio, engorda por dia e todas as pesagens. O comprador abre sem criar conta. O Campo Certo não vende gado: a negociação continua direto entre vocês.</p><a class="bigact" href="?lote=4"><span class="ico">'+ic("cow",24)+'</span><span>Ver a ficha que o comprador recebe<small>Exemplo com o lote de venda da fazenda</small></span></a>'+Shell.installHint()}
+function vLoteCli(){var l=lote(UI.qlote),h=Shell.bar({title:"Campo Certo",sub:"Ficha do lote"});
+if(!l)return h+'<h1 class="h2">Lote não encontrado</h1><p class="sub">Confira o link. Nesta demonstração, cada aparelho guarda os próprios dados. Teste com o lote de exemplo.</p><a class="btn lg block" href="?lote=4">Ver a ficha de exemplo</a>';
 var p=pasto(l.pasto),g=gmd(l),pr=Math.round(l.cur.p+g*30);
-return h+(p&&p.foto?'<img src="'+scene(p.foto)+'" alt="" style="width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:14px;display:block;margin-bottom:12px">':'')+
+return h+'<div class="banner">A Fazenda Santa Rita mandou esta ficha para você avaliar o lote antes de negociar.</div>'+(p&&p.foto?'<img src="'+scene(p.foto)+'" alt="" style="width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:14px;display:block;margin-bottom:12px">':'')+
 '<h1 class="h2">'+esc(l.nome)+'</h1><p class="sub">'+(p?esc(p.nome)+' · ':'')+'última pesagem em '+fd(l.cur.d)+'</p>'+
 '<div class="grid3" style="margin-bottom:12px"><div class="kpi"><span class="m">Cabeças</span><b>'+l.qtd+'</b></div><div class="kpi"><span class="m">Peso médio</span><b>'+l.cur.p+' kg</b></div><div class="kpi"><span class="m">Engorda</span><b>'+fmt1(g)+' kg/dia</b></div></div>'+
 '<div class="card" style="margin-bottom:12px"><div class="row"><div class="grow">Arrobas por cabeça</div><b>cerca de '+arroba(l.cur.p)+' @</b></div><div class="row"><div class="grow">Peso médio previsto em 30 dias</div><b>'+pr+' kg</b></div><div class="row" style="border:0"><div class="grow">Peso do lote todo</div><b>'+Math.round(l.qtd*l.cur.p).toLocaleString("pt-BR")+' kg</b></div><div class="m" style="margin-top:6px">Arroba calculada com rendimento de carcaça de 50%. Confirme na balança na hora do embarque.</div></div>'+
 '<div class="sec">Evolução do peso médio</div>'+chart(l)+
 '<div class="sec">Pesagens</div>'+(l.hist||[]).slice().reverse().map(function(x){return '<div class="row"><div class="grow">'+fd(x.d)+'</div><b>'+x.p+' kg</b></div>'}).join("")+
-'<button type="button" class="btn lg block" style="margin-top:16px" data-act="falarDono">'+ic("chat")+'Falar com o vendedor</button>'}
-function dCompr(id){var l=id?lote(id):null;if(!l)return '<h2 class="h2" style="font-size:21px">Mandar um lote para o comprador</h2><p class="sub">Escolha o lote. O comprador vê o peso, a engorda e o histórico, sem precisar de conta.</p><div class="stack" style="gap:8px">'+S.lotes.map(function(x){return '<button type="button" class="opt2" data-act="comprLote" data-v="'+x.id+'">'+esc(x.nome)+'<span>'+x.qtd+' cab. · '+x.cur.p+' kg</span></button>'}).join("")+'</div><button type="button" class="btn ghost lg block" style="margin-top:10px" data-act="close">Fechar</button>';
-var t="Olá! Tenho "+l.qtd+" cabeças no lote "+l.nome+", peso médio de "+l.cur.p+" kg (pesado em "+fd(l.cur.d)+"). Veja o histórico de peso e a engorda aqui: "+lk(l.id);
-return '<h2 class="h2" style="font-size:21px">'+esc(l.nome)+'</h2><textarea class="out" id="cmsg" readonly>'+esc(t)+'</textarea><a class="btn lg block" href="https://wa.me/?text='+encodeURIComponent(t)+'" target="_blank" rel="noopener">'+ic("send")+'Abrir no WhatsApp</a><a class="btn ghost lg block" href="?lote='+l.id+'">'+ic("cow")+'Ver como o comprador vê</a><button type="button" class="btn ghost lg block" data-act="close">Fechar</button>'}
-function head(){var u=UI.user,h='<div class="topbar"><div><div class="name">Campo Certo</div><div class="m">Fazenda Santa Rita · exemplo</div></div><button type="button" class="opbtn" data-act="menu" aria-expanded="'+!!UI.menu+'">'+ic("user",18)+esc(u.nome)+'</button></div>';
-if(UI.menu)h+='<div class="card" style="margin-bottom:12px"><div class="m" style="margin-bottom:10px">Você entrou como '+(u.role==="cap"?"capataz: lança pesagem, movimentação, diário e tarefas, mas não vê o dinheiro.":"dono e vê tudo.")+' Os dados desta demonstração ficam salvos só neste aparelho.</div><div class="stack" style="gap:8px">'+
-(UI.inst&&!standalone()?'<button type="button" class="btn ghost block" data-act="instalar">Instalar como aplicativo</button>':'')+
-'<button type="button" class="btn ghost block" data-act="reset2">'+(UI.resetArm?'Toque de novo para voltar aos dados de exemplo':'Recomeçar a demonstração')+'</button><button type="button" class="btn ghost block" data-act="sair">Sair</button></div></div>';
-return h}
+'<button type="button" class="btn lg block" style="margin-top:16px" data-act="falarDono">'+ic("chat")+'Falar com a fazenda</button>'}
+function dCompr(id){var l=id?lote(id):null;if(!l)return '<h2 class="h2" style="font-size:21px">Mandar a ficha de um lote</h2><p class="sub">Escolha o lote. O comprador vê o peso, a engorda e as pesagens antes de negociar, sem precisar de conta.</p><div class="stack" style="gap:8px">'+S.lotes.map(function(x){return '<button type="button" class="opt2" data-act="comprLote" data-v="'+x.id+'">'+esc(x.nome)+'<span>'+x.qtd+' cab. · '+x.cur.p+' kg</span></button>'}).join("")+'</div><button type="button" class="btn ghost lg block" style="margin-top:10px" data-act="close">Fechar</button>';
+var t="Olá! Segue a ficha do lote "+l.nome+": "+l.qtd+" cabeças, peso médio de "+l.cur.p+" kg (pesado em "+fd(l.cur.d)+"). Veja a engorda e todas as pesagens aqui: "+lk(l.id);
+return '<h2 class="h2" style="font-size:21px">Ficha do lote '+esc(l.nome)+'</h2><textarea class="out" id="cmsg" readonly>'+esc(t)+'</textarea><a class="btn lg block" href="https://wa.me/?text='+encodeURIComponent(t)+'" target="_blank" rel="noopener">'+ic("send")+'Abrir no WhatsApp</a><a class="btn ghost lg block" href="?lote='+l.id+'">'+ic("cow")+'Ver como o comprador vê</a><button type="button" class="btn ghost lg block" data-act="close">Fechar</button>'}
+function head(){var c=isCap();return Shell.bar({title:"Campo Certo",sub:"Fazenda Santa Rita",user:{name:c?"Tonho":"Dono",role:c?"Capataz · não vê o dinheiro":"Dono da fazenda"},items:[]})}
 function foot(){return nav(isCap()?[["painel","Início","home"],["pastos","Gado","cow"],["pesagem","Pesar","scale"],["diario","Diário","book"],["opiniao","Opinião","chat"]]:[["painel","Início","home"],["pastos","Gado","cow"],["pesagem","Pesar","scale"],["diario","Diário","book"],["dinheiro","Dinheiro","coin"],["opiniao","Opinião","chat"]],UI.tab)}
 
 function vPainel(){
@@ -143,7 +137,7 @@ return '<div class="grid3" style="margin-bottom:14px"><div class="kpi"><span cla
 '<div class="card" style="margin-bottom:14px;display:flex;justify-content:space-between;gap:8px"><span class="t">Chuva em novembro</span><span class="m">'+chuva().mm+' mm em '+chuva().n+' dias</span></div>'+
 '<button type="button" class="bigact" data-act="irpesar"><span class="ico">'+ic("scale",26)+'</span><span>Pesar um lote<small>A média e a engorda saem sozinhas</small></span></button>'+
 '<button type="button" class="bigact" data-act="dlg" data-v="mov"><span class="ico">'+ic("plus",26)+'</span><span>Movimentação do gado<small>Nasceu, comprei, vendi, perdi ou mudou de pasto</small></span></button>'+
-(isCap()?'':'<button type="button" class="bigact" data-act="dlg" data-v="d"><span class="ico">'+ic("coin",26)+'</span><span>Lançar uma despesa<small>Sal, ração, diesel, salário</small></span></button><button type="button" class="bigact" data-act="compr"><span class="ico">'+ic("send",26)+'</span><span>Mandar um lote para o comprador<small>Peso, engorda e histórico num link</small></span></button>')+
+(isCap()?'':'<button type="button" class="bigact" data-act="dlg" data-v="d"><span class="ico">'+ic("coin",26)+'</span><span>Lançar uma despesa<small>Sal, ração, diesel, salário</small></span></button><button type="button" class="bigact" data-act="compr"><span class="ico">'+ic("send",26)+'</span><span>Mandar a ficha de um lote<small>Para o comprador ver peso e engorda antes de negociar</small></span></button>')+
 (al.length?'<div class="sec">Atenção</div>'+al.join(""):'')+
 '<div class="sec" style="display:flex;justify-content:space-between;align-items:center">Próximas tarefas<button type="button" class="back" style="margin:0" data-act="tab" data-v="sanidade">Ver todas</button></div>'+(tar||'<p class="m">Nenhuma tarefa pendente.</p>')+
 '<div class="sec">Últimas movimentações</div>'+(lg||'<p class="m">Nada lançado ainda.</p>')}
@@ -194,7 +188,8 @@ h+='<button type="button" class="btn lg block" data-act="gerar">Gerar minhas res
 if(UI.opOut)h+='<div class="fld" style="margin-top:16px"><label for="out">Copie e mande para quem te enviou este protótipo</label><textarea class="out" id="out" readonly>'+esc(UI.opOut)+'</textarea><button type="button" class="btn ghost lg" data-act="copiar">Copiar respostas</button></div>';
 return h}
 
-function render(){if(UI.page==="login"){$("#app").innerHTML=vLogin();return}if(UI.page==="lote"){$("#app").innerHTML=vLoteCli();return}if(isCap()&&UI.tab==="dinheiro")UI.tab="painel";var v={painel:vPainel,pastos:vPastos,pesagem:vPesagem,dinheiro:vDinheiro,sanidade:vSan,opiniao:vOp,diario:vDiario}[UI.tab]();$("#app").innerHTML=head()+v+foot();if(UI.focus){var p=$("#peso");if(p)p.focus();UI.focus=false}}
+function render(){render0();Shell.after()}
+function render0(){if(UI.page==="login"){$("#app").innerHTML=vLogin();return}if(UI.page==="lote"){$("#app").innerHTML=vLoteCli();return}if(isCap()&&UI.tab==="dinheiro")UI.tab="painel";var v={painel:vPainel,pastos:vPastos,pesagem:vPesagem,dinheiro:vDinheiro,sanidade:vSan,opiniao:vOp,diario:vDiario}[UI.tab]();$("#app").innerHTML=head()+v+foot();if(UI.focus){var p=$("#peso");if(p)p.focus();UI.focus=false}}
 function top(){window.scrollTo(0,0)}
 
 var MV={nasc:["sprout","Nasceu bezerro","Entra no lote"],compra:["bag","Comprei gado","Entra no lote"],venda:["coin","Vendi gado","Sai do lote"],morte:["xcircle","Perdi um animal","Sai do lote"],mudar:["swap","Mudei de pasto","O lote vai para outro pasto"]};
@@ -218,17 +213,13 @@ return '<form id="ffin" data-form="fin" data-t="'+t+'"><h2 class="h2" style="mar
 function logAdd(txt){S.log.push({d:REF,txt:txt})}
 
 var A={
-tab:function(d){UI.tab=d.v;UI.menu=false;try{history.replaceState(null,"","#"+d.v)}catch(e){}render();top()},
-menu:function(){UI.menu=!UI.menu;UI.resetArm=0;render()},
+tab:function(d){UI.tab=d.v;try{history.replaceState(history.state,"","#"+d.v)}catch(e){}render();top()},
 fillLogin:function(d){UI.lu=d.v;UI.lp="demo";render()},
 login:function(){var a=$("#lu"),b=$("#lp");UI.lu=a?a.value:UI.lu;UI.lp=b?b.value:UI.lp;var u=USERS[String(UI.lu||"").trim().toLowerCase()];if(!u||String(UI.lp||"").trim()!=="demo"){toast("Usuário ou senha não conferem. Use um dos acessos de demonstração.");return}
 UI.user=u;try{localStorage.setItem(KEY+"-sessao",JSON.stringify(u))}catch(e){}UI.page="app";UI.tab="painel";render();top()},
-sair:function(){try{localStorage.removeItem(KEY+"-sessao")}catch(e){}location.href=location.pathname},
-reset2:function(){if(!UI.resetArm){UI.resetArm=1;render();return}UI.resetArm=0;UI.menu=false;A.reset()},
-instalar:function(){if(UI.inst){UI.inst.prompt();UI.inst=null;render()}},
 compr:function(){var el=$("#dlg");el.innerHTML=dCompr(0);if(!el.open)el.showModal()},
 comprLote:function(d){$("#dlg").innerHTML=dCompr(+d.v)},
-falarDono:function(){toast("Na versão real, abre o WhatsApp do dono da fazenda.")},
+falarDono:function(){toast("Na versão real, abre o WhatsApp da fazenda.")},
 irpesar:function(){UI.tab="pesagem";render();top()},
 dlg:function(d){var el=$("#dlg");if(d.v==="mov")UI.mv=mvNew();el.innerHTML=d.v==="mov"?dMov():dFin(d.v);if(!el.open)el.showModal()},
 mvTipo:function(d){UI.mv.tipo=d.v;UI.mv.q=1;UI.mv.pasto=lote(UI.mv.lote).pasto;$("#dlg").innerHTML=dMov()},
@@ -283,8 +274,8 @@ var qs=new URLSearchParams(location.search),sess=getSess();UI.user=sess;
 if(qs.get("lote")){UI.page="lote";UI.qlote=parseInt(qs.get("lote"),10)}
 else if(sess){UI.page="app";var h0=location.hash.slice(1);if(["painel","pastos","pesagem","diario","dinheiro","opiniao","sanidade"].indexOf(h0)>-1)UI.tab=h0}
 else UI.page="login";
+Shell.init({render:render,onReset:function(){A.reset()},onLogout:function(){try{localStorage.removeItem(KEY+"-sessao")}catch(e){}location.href=location.pathname}});
 render();
 document.addEventListener("keydown",function(e){if(e.key==="Enter"&&(e.target.id==="lp"||e.target.id==="lu"))A.login()});
-window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();UI.inst=e;if(UI.page==="login"||UI.menu)render()});
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(function(){});
 })();
